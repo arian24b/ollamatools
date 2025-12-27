@@ -20,15 +20,14 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up UV
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: '3.14'
-          cache: 'uv'
 
       - name: Install dependencies
         run: |
-          pip install python-semantic-release
+          uv tool install python-semantic-release
 
       - name: Configure Git
         run: |
