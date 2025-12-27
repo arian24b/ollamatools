@@ -1,5 +1,5 @@
 [project]
-name = "ollamatools"
+name = "ollama-tool-cli"
 version = "1.0.1"
 description = "CLI tool for managing Ollama models - backup, restore, update, and list models"
 readme = "README.md"
@@ -28,7 +28,7 @@ keywords = ["ollama", "cli", "models", "backup", "restore", "llm"]
 dev = ["ruff", "pytest", "build"]
 
 [project.scripts]
-ollamatools = "ollamatools:app"
+ollama-tool-cli = "ollamatools:app"
 
 [project.urls]
 Homepage = "https://github.com/arian24b/ollamatool"

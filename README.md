@@ -1,4 +1,4 @@
-# Ollamatools 🦙
+# Ollama Tool CLI 🦙
 
 A modern CLI tool for managing Ollama models - backup, restore, update, and list your models with ease.
 
@@ -7,20 +7,20 @@ A modern CLI tool for managing Ollama models - backup, restore, update, and list
 ### Using pip (recommended)
 
 ```bash
-pip install ollamatools
+pip install ollama-tool-cli
 ```
 
 ### Using uv
 
 ```bash
-uv pip install ollamatools
+uv pip install ollama-tool-cli
 ```
 
 ### From source
 
 ```bash
 git clone https://github.com/arian24b/ollamatool.git
-cd ollamatools
+cd ollamatool
 pip install .
 ```
 
@@ -35,37 +35,37 @@ pip install .
 
 ```bash
 # Show help
-ollamatools
+ollama-tool-cli
 
 # List all installed models
-ollamatools list
+ollama-tool-cli list
 
 # Update all models
-ollamatools update
+ollama-tool-cli update
 
 # Update a specific model
-ollamatools update llama3.2
+ollama-tool-cli update llama3.2
 
 # Backup all models to default location (~/Downloads/ollama_model_backups)
-ollamatools backup
+ollama-tool-cli backup
 
 # Backup to custom path
-ollamatools backup --path /path/to/backup
+ollama-tool-cli backup --path /path/to/backup
 
 # Backup a specific model
-ollamatools backup --model llama3.2
+ollama-tool-cli backup --model llama3.2
 
 # Restore from backup
-ollamatools restore /path/to/backup.zip
+ollama-tool-cli restore /path/to/backup.zip
 
 # Show Ollama version
-ollamatools version
+ollama-tool-cli version
 
 # Show installation information
-ollamatools info
+ollama-tool-cli info
 
 # Check if Ollama is installed
-ollamatools check
+ollama-tool-cli check
 ```
 
 ### Command Details

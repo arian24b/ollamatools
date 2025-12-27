@@ -94,7 +94,7 @@ wheels = [
 ]
 
 [[package]]
-name = "ollamatools"
+name = "ollama-tool-cli"
 version = "1.0.1"
 source = { editable = "." }
 dependencies = [
