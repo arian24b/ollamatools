@@ -20,7 +20,7 @@ uv pip install ollamatools
 
 ```bash
 git clone https://github.com/arian24b/ollamatool.git
-cd ollamatool
+cd ollamatools
 pip install .
 ```
 
@@ -134,7 +134,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 # Export one model:
 
-Download [Export_Model.py](https://github.com/AaronFeng753/Ollama-Model-Dumper/blob/main/Export_Model.py) 
+Download [Export_Model.py](https://github.com/AaronFeng753/Ollama-Model-Dumper/blob/main/Export_Model.py)
 
 Edit `BackUp_Folder` and `Ollama_Model_Folder` at the bottom of the file:
 ```
@@ -178,7 +178,7 @@ Edit `BackUp_Folder` and `Ollama_Model_Folder` at the bottom of the file:
         #****************************************************************
         # Your ollama model folder:
         Ollama_Model_Folder = r"D:\llama\.ollama\models"
-        
+
         # Where you want to back up your models:
         BackUp_Folder = r"E:\llama_backup"
         #****************************************************************
@@ -200,7 +200,7 @@ It will backup gguf and modelfile into a folder:
 
 To avoid unnecessary copying, by default it will skip the model if it already exists in the backup folder
 
-You can turn off this by delete 
+You can turn off this by delete
 
 ```
     if os.path.exists(new_folder_path) and os.path.isdir(new_folder_path):
@@ -212,7 +212,7 @@ At:
 
 ```
     new_folder_path = os.path.join(BackUp_Folder, model_name)
-    
+
     #****************************************************************
     #****************************************************************
     #****************************************************************
@@ -270,4 +270,3 @@ Only the models you downloaded from ollama.com will be updated.
 #### Supports AMD / Nvidia / Intel GPU
 
 ![](https://raw.githubusercontent.com/AaronFeng753/AaronFeng753/main/res/ReadMeCover.png)
-
