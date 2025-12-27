@@ -40,7 +40,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.semantic_release]
-commit_parser = "angular"
+commit_parser = "conventional"
 commit_author = "Arian Omrani <arianomrani24@gmail.com>"
 branch = "main"
 version_toml = ["pyproject.toml:project.version"]
