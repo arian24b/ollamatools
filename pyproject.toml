@@ -1,6 +1,6 @@
 [project]
 name = "ollamatools"
-version = "1.0.0"
+version = "1.0.1"
 description = "CLI tool for managing Ollama models - backup, restore, update, and list models"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -45,4 +45,4 @@ commit_author = "Arian Omrani <arianomrani24@gmail.com>"
 branch = "main"
 version_toml = ["pyproject.toml:project.version"]
 upload_to_vcs_release = true
-build_command = "uv run python -m build"
+build_command = "uv run --dev python -m build"
