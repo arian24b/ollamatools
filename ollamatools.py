@@ -5,6 +5,8 @@ from subprocess import PIPE, Popen
 from sys import platform
 from zipfile import ZipFile
 
+import typer
+
 
 @dataclass
 class CMDOutput:
@@ -80,7 +82,6 @@ def models() -> list[str]:
 
 def update_models(model_names: list[str]) -> None:
     for model_name in model_names:
-        print(f"Updating model: {model_name}")
         run_command(f"ollama pull {model_name}")
 
 
@@ -117,15 +118,133 @@ def restore_models(backup_path: Path) -> None:
         zfile.extractall(models_path)
 
 
-def main() -> None:
+app = typer.Typer(no_args_is_help=True)
+
+
+def check_installation() -> None:
     if not check_ollama_installed():
-        print("Ollama is not installed. Please install Ollama to proceed.")
+        typer.echo(
+            "Error: Ollama is not installed. Please install Ollama to proceed.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def list() -> None:
+    """List all installed Ollama models."""
+    check_installation()
+    model_list = models()
+
+    if not model_list:
+        typer.echo("No models installed.")
         return
-    print(f"Ollama Version: {ollama_version()}")
-    print(f"Models Path: {ollama_models_path()}")
-    print(models())
-    # update_models(models())
-    backup_models()
+
+    typer.echo("\nInstalled Models:")
+    typer.echo("-" * 40)
+    for model in model_list:
+        typer.echo(f"  • {model}")
+    typer.echo("-" * 40)
+    typer.echo(f"\nTotal: {len(model_list)} model(s)")
+
+
+@app.command()
+def update(
+    model: str = typer.Argument(
+        None,
+        help="Model name to update (updates all if not provided)",
+    ),
+) -> None:
+    """Update one or all Ollama models."""
+    check_installation()
+
+    all_models = models()
+    models_to_update = [model] if model else all_models
+
+    if not models_to_update:
+        typer.echo("No models to update.")
+        return
+
+    typer.echo(f"Updating {len(models_to_update)} model(s)...\n")
+    update_models(models_to_update)
+    typer.echo("\nUpdate complete.")
+
+
+@app.command()
+def backup(
+    backup_path: Path = typer.Option(
+        BACKUP_PATH,
+        "--path",
+        "-p",
+        help="Directory to save backups (default: ~/Downloads/ollama_model_backups)",
+    ),
+    model: str = typer.Option(
+        None,
+        "--model",
+        "-m",
+        help="Specific model to backup (backs up all if not provided)",
+    ),
+) -> None:
+    """Backup Ollama models to a zip file."""
+    check_installation()
+
+    backup_path = Path(backup_path).expanduser()
+    typer.echo(f"Backing up models to: {backup_path}")
+    backup_models(backup_path, model)
+    typer.echo("\nBackup complete.")
+
+
+@app.command()
+def restore(
+    backup_path: Path = typer.Argument(
+        ...,
+        help="Path to backup zip file or directory",
+    ),
+) -> None:
+    """Restore Ollama models from backup."""
+    check_installation()
+
+    backup_path = Path(backup_path).expanduser()
+    if not backup_path.exists():
+        typer.echo(f"Error: Backup path does not exist: {backup_path}", err=True)
+        raise typer.Exit(code=1)
+
+    typer.echo(f"Restoring models from: {backup_path}")
+    restore_models(backup_path)
+    typer.echo("\nRestore complete.")
+
+
+@app.command()
+def version() -> None:
+    """Show Ollama version."""
+    check_installation()
+    typer.echo(f"Ollama Version: {ollama_version()}")
+
+
+@app.command()
+def info() -> None:
+    """Show Ollama installation information."""
+    check_installation()
+    typer.echo(f"Ollama Version: {ollama_version()}")
+    typer.echo(f"Models Path: {ollama_models_path()}")
+    typer.echo(f"Platform: {platform}")
+    typer.echo(f"Installed Models: {len(models())}")
+
+
+@app.command()
+def check() -> None:
+    """Check if Ollama is installed and accessible."""
+    if check_ollama_installed():
+        typer.echo("✓ Ollama is installed and accessible")
+        typer.echo(f"  Version: {ollama_version()}")
+        typer.echo(f"  Models: {len(models())}")
+    else:
+        typer.echo("✗ Ollama is not installed or not accessible", err=True)
+        raise typer.Exit(code=1)
+
+
+def main() -> None:
+    app()
 
 
 if __name__ == "__main__":

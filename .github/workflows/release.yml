@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+          cache: 'uv'
+
+      - name: Install dependencies
+        run: |
+          pip install python-semantic-release
+
+      - name: Configure Git
+        run: |
+          git config user.name "Arian Omrani"
+          git config user.email "arianomrani24@gmail.com"
+
+      - name: Semantic Release (Version, Tag, GitHub Release)
+        id: semantic-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          semantic-release version --changelog --tag
+
+      - name: Build Package
+        if: steps.semantic-release.outputs.version != ''
+        run: |
+          uv sync
+          uv build
+
+      - name: Publish to PyPI
+        if: steps.semantic-release.outputs.version != ''
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}

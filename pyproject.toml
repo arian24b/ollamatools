@@ -1,7 +1,48 @@
 [project]
 name = "ollamatools"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.2.0"
+description = "CLI tool for managing Ollama models - backup, restore, update, and list models"
 readme = "README.md"
-requires-python = ">=3.14"
-dependencies = []
+requires-python = ">=3.10"
+dependencies = [
+    "typer>=0.12.0",
+]
+authors = [
+    {name = "Arian Omrani", email = "arianomrani24@gmail.com"}
+]
+license = "MIT"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+keywords = ["ollama", "cli", "models", "backup", "restore", "llm"]
+
+[project.optional-dependencies]
+dev = ["ruff", "pytest"]
+
+[project.scripts]
+ollamatools = "ollamatools:app"
+
+[project.urls]
+Homepage = "https://github.com/arian24b/ollamatool"
+Repository = "https://github.com/arian24b/ollamatool"
+Issues = "https://github.com/arian24b/ollamatool/issues"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.semantic_release]
+commit_parser = "angular"
+commit_author = "Arian Omrani <arianomrani24@gmail.com>"
+branch = "main"
+version_toml = ["pyproject.toml:project.version"]
+upload_to_vcs_release = true
+build_command = "python -m build"

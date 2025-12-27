@@ -1,23 +1,124 @@
-# Ollama-Model-Dumper 🦙
+# Ollamatools 🦙
 
-### Export and Backup your Ollama models into GGUF and ModelFile
+A modern CLI tool for managing Ollama models - backup, restore, update, and list your models with ease.
 
-<p align="left">
-<img src="https://github.com/user-attachments/assets/7e961393-5f2c-4a0b-afc5-57f49b0a490f" height="300">
-</p>
+## Installation
 
-### 📜How to use: 
-- [Export one model](https://github.com/AaronFeng753/Ollama-Model-Dumper#export-one-model)
-- [Backup ALL your models](https://github.com/AaronFeng753/Ollama-Model-Dumper#backup-all-your-models)
-- [Import your backup folder into ollama](https://github.com/AaronFeng753/Ollama-Model-Dumper#import-your-backup-folder-into-ollama)
-- [Update your ollama models](https://github.com/AaronFeng753/Ollama-Model-Dumper/blob/main/README.md#update-your-ollama-models)
+### Using pip (recommended)
 
-### ⚠️Disclaimer:
+```bash
+pip install ollamatools
 ```
-I have only tested these two scripts on Windows 11 + Ollama 0.3.8
-I am not sure if they will work correctly on Mac or Linux systems.
-This is just a free open-source script, I am not responsible for any consequences that may arise from your use of the code.
+
+### Using uv
+
+```bash
+uv pip install ollamatools
 ```
+
+### From source
+
+```bash
+git clone https://github.com/arian24b/ollamatool.git
+cd ollamatool
+pip install .
+```
+
+## Requirements
+
+- Python 3.10 or higher
+- Ollama installed and running
+
+## Usage
+
+### Basic Commands
+
+```bash
+# Show help
+ollamatools
+
+# List all installed models
+ollamatools list
+
+# Update all models
+ollamatools update
+
+# Update a specific model
+ollamatools update llama3.2
+
+# Backup all models to default location (~/Downloads/ollama_model_backups)
+ollamatools backup
+
+# Backup to custom path
+ollamatools backup --path /path/to/backup
+
+# Backup a specific model
+ollamatools backup --model llama3.2
+
+# Restore from backup
+ollamatools restore /path/to/backup.zip
+
+# Show Ollama version
+ollamatools version
+
+# Show installation information
+ollamatools info
+
+# Check if Ollama is installed
+ollamatools check
+```
+
+### Command Details
+
+#### `list`
+Display all installed Ollama models with their versions.
+
+#### `update [model]`
+Update one or all Ollama models. If no model name is provided, updates all models.
+
+#### `backup [--path PATH] [--model MODEL]`
+Backup Ollama models to zip files. By default backs up all models to `~/Downloads/ollama_model_backups`.
+
+- `--path, -p`: Custom backup directory path
+- `--model, -m`: Backup only a specific model
+
+#### `restore <path>`
+Restore Ollama models from a backup zip file or directory.
+
+#### `version`
+Display the installed Ollama version.
+
+#### `info`
+Show detailed Ollama installation information including version, models path, platform, and number of installed models.
+
+#### `check`
+Verify that Ollama is installed and accessible.
+
+## Development
+
+### Setup development environment
+
+```bash
+# Using uv
+uv sync
+
+# Using pip
+pip install -e ".[dev]"
+```
+
+### Build the package
+
+```bash
+uv build
+```
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
