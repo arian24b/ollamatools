@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.1.1 (2025-12-27)
+
+### Bug Fixes
+
+- Update Git configuration to use GitHub actor and modify URLs in pyproject.toml
+  ([`ebc97c2`](https://github.com/arian24b/ollamatools/commit/ebc97c2d46ad90ea1e5f2eec3da25682a60d25f6))
+
+
 ## v1.1.0 (2025-12-27)
 
 ### Bug Fixes
