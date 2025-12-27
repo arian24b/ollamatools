@@ -44,5 +44,5 @@ commit_parser = "conventional"
 commit_author = "Arian Omrani <arianomrani24@gmail.com>"
 branch = "main"
 version_toml = ["pyproject.toml:project.version"]
-upload_to_vcs_release = true
-build_command = ""
+upload_to_vcs_release = false
+build_command = "python -m build"
