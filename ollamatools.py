@@ -7,6 +7,8 @@ from zipfile import ZipFile
 
 import typer
 
+# Test commit for patch release
+
 
 @dataclass
 class CMDOutput:
