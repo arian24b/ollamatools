@@ -31,9 +31,9 @@ dev = ["ruff", "pytest", "build"]
 ollama-tool-cli = "ollamatools:app"
 
 [project.urls]
-Homepage = "https://github.com/arian24b/ollamatool"
-Repository = "https://github.com/arian24b/ollamatool"
-Issues = "https://github.com/arian24b/ollamatool/issues"
+Homepage = "https://github.com/arian24b/ollamatools"
+Repository = "https://github.com/arian24b/ollamatools"
+Issues = "https://github.com/arian24b/ollamatools/issues"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]

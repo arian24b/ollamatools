@@ -31,8 +31,8 @@ jobs:
 
       - name: Configure Git
         run: |
-          git config user.name "Arian Omrani"
-          git config user.email "arianomrani24@gmail.com"
+          git config user.name ${{ github.actor }}
+          git config user.email ${{ github.actor }}@users.noreply.github.com
 
       - name: Semantic Release (Version, Tag, GitHub Release)
         id: semantic-release
