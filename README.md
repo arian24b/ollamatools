@@ -55,8 +55,17 @@ ollama-tool-cli backup --path /path/to/backup
 # Backup a specific model
 ollama-tool-cli backup --model llama3.2
 
+# Backup with parallel jobs
+ollama-tool-cli backup --jobs 4
+
+# Run backup in background
+ollama-tool-cli backup --background
+
 # Restore from backup
 ollama-tool-cli restore /path/to/backup.zip
+
+# Restore all backups in a directory
+ollama-tool-cli restore /path/to/backup_dir
 
 # Show Ollama version
 ollama-tool-cli version
@@ -66,6 +75,12 @@ ollama-tool-cli info
 
 # Check if Ollama is installed
 ollama-tool-cli check
+
+# Show log paths
+ollama-tool-cli logs
+
+# Follow logs
+ollama-tool-cli logs --follow
 ```
 
 ### Command Details
@@ -76,14 +91,22 @@ Display all installed Ollama models with their versions.
 #### `update [model]`
 Update one or all Ollama models. If no model name is provided, updates all models.
 
+- `--jobs, -j`: Number of parallel jobs
+- `--background, -b`: Run command in background
+
 #### `backup [--path PATH] [--model MODEL]`
 Backup Ollama models to zip files. By default backs up all models to `~/Downloads/ollama_model_backups`.
 
 - `--path, -p`: Custom backup directory path
 - `--model, -m`: Backup only a specific model
+- `--jobs, -j`: Number of parallel jobs
+- `--background, -b`: Run command in background
 
 #### `restore <path>`
 Restore Ollama models from a backup zip file or directory.
+
+- `--jobs, -j`: Number of parallel jobs
+- `--background, -b`: Run command in background
 
 #### `version`
 Display the installed Ollama version.
@@ -93,6 +116,19 @@ Show detailed Ollama installation information including version, models path, pl
 
 #### `check`
 Verify that Ollama is installed and accessible.
+
+#### `logs`
+Show log file locations or follow logs.
+
+- `--follow, -f`: Follow the log output
+
+## Background logs
+
+Background commands write to an OS-specific log directory with size-based rotation:
+
+- macOS: `~/Library/Logs/ollama-tool-cli/`
+- Linux: `${XDG_STATE_HOME:-~/.local/state}/ollama-tool-cli/logs/`
+- Windows: `%LOCALAPPDATA%\ollama-tool-cli\Logs\`
 
 ## Development
 
