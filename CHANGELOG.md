@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.1.2 (2026-02-11)
+
+### Bug Fixes
+
+- Simplify imports and improve code readability
+  ([`075b94d`](https://github.com/arian24b/ollamatools/commit/075b94db3c710b4480f149d3ac91c1376f210e0c))
+
+
 ## v1.1.1 (2025-12-27)
 
 ### Bug Fixes
