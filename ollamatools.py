@@ -1,18 +1,14 @@
-import builtins
-import os
-import sys
-import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from json import loads
+from os import cpu_count, getenv
 from pathlib import Path
 from subprocess import PIPE, Popen
-from sys import platform
+from sys import argv, platform
+from time import sleep
 from zipfile import ZipFile
 
 import typer
-
-# Test commit for patch release
 
 
 @dataclass
@@ -56,7 +52,7 @@ def run_command(command: str | list[str]) -> CMDOutput:
 
 
 def default_jobs() -> int:
-    return min(4, os.cpu_count() or 1)
+    return min(4, cpu_count() or 1)
 
 
 def resolve_jobs(value: int | None) -> int:
@@ -68,10 +64,10 @@ def log_dir() -> Path:
     if platform.lower() == "darwin":
         return Path("~/Library/Logs/ollama-tool-cli").expanduser()
     if platform.lower() == "linux":
-        base_dir = os.getenv("XDG_STATE_HOME") or "~/.local/state"
+        base_dir = getenv("XDG_STATE_HOME") or "~/.local/state"
         return Path(base_dir).expanduser() / "ollama-tool-cli" / "logs"
     if platform.lower() == "win32":
-        base_dir = os.getenv("LOCALAPPDATA") or os.getenv("APPDATA") or "~"
+        base_dir = getenv("LOCALAPPDATA") or getenv("APPDATA") or "~"
         return Path(base_dir).expanduser() / "ollama-tool-cli" / "Logs"
     return Path("~/Library/Logs/ollama-tool-cli").expanduser()
 
@@ -95,7 +91,7 @@ def rotate_log_file(file_path: Path) -> None:
 
 def background_command_args() -> list[str]:
     args = []
-    for arg in sys.argv:
+    for arg in argv:
         if arg in {"--background", "-b"}:
             continue
         args.append(arg)
@@ -151,7 +147,7 @@ def follow_log(file_path: Path) -> None:
                     file_handle.close()
                     file_handle = None
                     position = 0
-                time.sleep(0.5)
+                sleep(0.5)
                 continue
 
             if file_handle is None:
@@ -171,7 +167,7 @@ def follow_log(file_path: Path) -> None:
                     file_handle = None
                     position = 0
 
-            time.sleep(0.5)
+            sleep(0.5)
     except KeyboardInterrupt:
         return
     finally:
@@ -219,7 +215,7 @@ def update_models(model_names: list[str]) -> None:
 
 
 def update_models_parallel(model_names: list[str], jobs: int) -> list[str]:
-    failures: builtins.list[str] = []
+    failures: list[str] = []
 
     with ThreadPoolExecutor(max_workers=jobs) as executor:
         future_map = {
@@ -275,7 +271,7 @@ def backup_models_parallel(
     models_path = ollama_models_path()
     backup_path = Path(backup_path)
     backup_path.mkdir(parents=True, exist_ok=True)
-    failures: builtins.list[str] = []
+    failures: list[str] = []
 
     with ThreadPoolExecutor(max_workers=jobs) as executor:
         future_map = {
@@ -300,7 +296,7 @@ def restore_models(backup_path: Path) -> None:
 
 
 def restore_many(backup_paths: list[Path], jobs: int) -> list[Path]:
-    failures: builtins.list[Path] = []
+    failures: list[Path] = []
 
     with ThreadPoolExecutor(max_workers=jobs) as executor:
         future_map = {
