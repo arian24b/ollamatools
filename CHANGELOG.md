@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.2.0 (2026-02-11)
+
+### Features
+
+- Add parallel jobs, background jobs, restore from dir, remove check and version command.
+  ([`795181a`](https://github.com/arian24b/ollamatools/commit/795181ab13c1c62b4e62e6d3e63019b9ce3a4fca))
+
+
 ## v1.1.2 (2026-02-11)
 
 ### Bug Fixes

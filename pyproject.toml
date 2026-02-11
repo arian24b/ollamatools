@@ -1,6 +1,6 @@
 [project]
 name = "ollama-tool-cli"
-version = "1.1.2"
+version = "1.2.0"
 description = "CLI tool for managing Ollama models - backup, restore, update, and list models"
 readme = "README.md"
 requires-python = ">=3.10"
