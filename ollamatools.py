@@ -78,11 +78,7 @@ def rotate_log_file(file_path: Path) -> None:
 
     for index in range(LOG_FILE_BACKUPS, 0, -1):
         rotated_path = file_path.with_suffix(f"{file_path.suffix}.{index}")
-        previous_path = (
-            file_path
-            if index == 1
-            else file_path.with_suffix(f"{file_path.suffix}.{index - 1}")
-        )
+        previous_path = file_path if index == 1 else file_path.with_suffix(f"{file_path.suffix}.{index - 1}")
         if previous_path.exists():
             if rotated_path.exists():
                 rotated_path.unlink()
@@ -182,7 +178,7 @@ def check_ollama_installed() -> bool:
 
 def ollama_version() -> str:
     result = run_command("ollama --version")
-    return result.output_text.strip()
+    return result.output_text.split("is")[1].strip()
 
 
 def create_backup(path_to_backup: list[Path], backup_path: Path) -> None:
@@ -218,10 +214,7 @@ def update_models_parallel(model_names: list[str], jobs: int) -> list[str]:
     failures: list[str] = []
 
     with ThreadPoolExecutor(max_workers=jobs) as executor:
-        future_map = {
-            executor.submit(run_command, f"ollama pull {model}"): model
-            for model in model_names
-        }
+        future_map = {executor.submit(run_command, f"ollama pull {model}"): model for model in model_names}
         for future in as_completed(future_map):
             model = future_map[future]
             result = future.result()
@@ -236,16 +229,10 @@ def backup_single_model(
     model: str,
 ) -> str | None:
     model_name, model_version = model.split(":") if ":" in model else (model, "latest")
-    model_schema_path = (
-        models_path
-        / f"manifests/registry.ollama.ai/library/{model_name}/{model_version}"
-    )
+    model_schema_path = models_path / f"manifests/registry.ollama.ai/library/{model_name}/{model_version}"
     model_layers = loads(Path(model_schema_path).read_bytes())["layers"]
 
-    digests_path = [
-        models_path / "blobs" / layer["digest"].replace(":", "-")
-        for layer in model_layers
-    ]
+    digests_path = [models_path / "blobs" / layer["digest"].replace(":", "-") for layer in model_layers]
     digests_path.append(model_schema_path)
 
     archive_path = backup_path / f"{model_name}-{model_version}.zip"
@@ -275,8 +262,7 @@ def backup_models_parallel(
 
     with ThreadPoolExecutor(max_workers=jobs) as executor:
         future_map = {
-            executor.submit(backup_single_model, models_path, backup_path, model): model
-            for model in model_list
+            executor.submit(backup_single_model, models_path, backup_path, model): model for model in model_list
         }
         for future in as_completed(future_map):
             model = future_map[future]
@@ -299,9 +285,7 @@ def restore_many(backup_paths: list[Path], jobs: int) -> list[Path]:
     failures: list[Path] = []
 
     with ThreadPoolExecutor(max_workers=jobs) as executor:
-        future_map = {
-            executor.submit(restore_models, path): path for path in backup_paths
-        }
+        future_map = {executor.submit(restore_models, path): path for path in backup_paths}
         for future in as_completed(future_map):
             path = future_map[future]
             try:
@@ -485,32 +469,14 @@ def restore(
 
 
 @app.command()
-def version() -> None:
-    """Show Ollama version."""
-    check_installation()
-    typer.echo(f"Ollama Version: {ollama_version()}")
-
-
-@app.command()
 def info() -> None:
     """Show Ollama installation information."""
     check_installation()
     typer.echo(f"Ollama Version: {ollama_version()}")
-    typer.echo(f"Models Path: {ollama_models_path()}")
     typer.echo(f"Platform: {platform}")
     typer.echo(f"Installed Models: {len(models())}")
-
-
-@app.command()
-def check() -> None:
-    """Check if Ollama is installed and accessible."""
-    if check_ollama_installed():
-        typer.echo("✓ Ollama is installed and accessible")
-        typer.echo(f"  Version: {ollama_version()}")
-        typer.echo(f"  Models: {len(models())}")
-    else:
-        typer.echo("✗ Ollama is not installed or not accessible", err=True)
-        raise typer.Exit(code=1)
+    typer.echo(f"Models Path: {ollama_models_path()}")
+    typer.echo(f"Logs: {log_dir()}")
 
 
 @app.command()

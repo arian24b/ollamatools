@@ -4,12 +4,6 @@ A modern CLI tool for managing Ollama models - backup, restore, update, and list
 
 ## Installation
 
-### Using pip (recommended)
-
-```bash
-pip install ollama-tool-cli
-```
-
 ### Using uv
 
 ```bash
@@ -67,14 +61,8 @@ ollama-tool-cli restore /path/to/backup.zip
 # Restore all backups in a directory
 ollama-tool-cli restore /path/to/backup_dir
 
-# Show Ollama version
-ollama-tool-cli version
-
-# Show installation information
+# Show installation information and version
 ollama-tool-cli info
-
-# Check if Ollama is installed
-ollama-tool-cli check
 
 # Show log paths
 ollama-tool-cli logs
@@ -108,14 +96,8 @@ Restore Ollama models from a backup zip file or directory.
 - `--jobs, -j`: Number of parallel jobs
 - `--background, -b`: Run command in background
 
-#### `version`
-Display the installed Ollama version.
-
 #### `info`
 Show detailed Ollama installation information including version, models path, platform, and number of installed models.
-
-#### `check`
-Verify that Ollama is installed and accessible.
 
 #### `logs`
 Show log file locations or follow logs.

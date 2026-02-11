@@ -24,9 +24,6 @@ classifiers = [
 ]
 keywords = ["ollama", "cli", "models", "backup", "restore", "llm"]
 
-[project.optional-dependencies]
-dev = ["ruff", "pytest", "build"]
-
 [project.scripts]
 ollama-tool-cli = "ollamatools:app"
 
@@ -46,3 +43,38 @@ branch = "main"
 version_toml = ["pyproject.toml:project.version"]
 upload_to_vcs_release = false
 build_command = "uv build"
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+respect-gitignore = true
+fix = true
+show-fixes = true
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "N",      # pep8-naming
+    "UP",     # pyupgrade
+    "S",      # bandit
+    "B",      # flake8-bugbear
+    "A",      # flake8-builtins
+    "C4",     # flake8-comprehensions
+    "DTZ",    # flake8-datetimez
+    "T20",    # flake8-print
+    "SIM",    # flake8-simplify
+    "LOG",    # flake8-logging
+    "RUF",    # Ruff-specific rules
+]
+ignore = [
+    "S101",   # Use of assert detected (needed for tests)
+    "T20",    # print statements (CLI tool)
+    "A003",   # Class attribute shadows builtin
+]
