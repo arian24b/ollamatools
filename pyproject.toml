@@ -4,9 +4,6 @@ version = "1.2.0"
 description = "CLI tool for managing Ollama models - backup, restore, update, and list models"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = [
-    "typer>=0.23.1",
-]
 authors = [
     {name = "Arian Omrani", email = "arian24b@gmail.com"}
 ]
@@ -23,9 +20,12 @@ classifiers = [
     "Programming Language :: Python :: 3.14",
 ]
 keywords = ["ollama", "cli", "models", "backup", "restore", "llm", "ai"]
+dependencies = [
+    "typer>=0.23.1",
+]
 
 [project.scripts]
-ollama-tool-cli = "ollamatools:app"
+ollama-tool-cli = "ollamatools:run"
 
 [project.urls]
 Homepage = "https://github.com/arian24b/ollamatools"
