@@ -5,14 +5,14 @@ description = "CLI tool for managing Ollama models - backup, restore, update, an
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "typer>=0.21.2",
+    "typer>=0.23.1",
 ]
 authors = [
-    {name = "Arian Omrani", email = "arianomrani24@gmail.com"}
+    {name = "Arian Omrani", email = "arian24b@gmail.com"}
 ]
 license = "MIT"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: production",
     "Intended Audience :: Developers",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
@@ -22,7 +22,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
-keywords = ["ollama", "cli", "models", "backup", "restore", "llm"]
+keywords = ["ollama", "cli", "models", "backup", "restore", "llm", "ai"]
 
 [project.scripts]
 ollama-tool-cli = "ollamatools:app"
@@ -38,7 +38,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.semantic_release]
 commit_parser = "conventional"
-commit_author = "Arian Omrani <arianomrani24@gmail.com>"
+commit_author = "Arian Omrani <arian24b@gmail.com>"
 branch = "main"
 version_toml = ["pyproject.toml:project.version"]
 upload_to_vcs_release = false
