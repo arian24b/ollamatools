@@ -40,7 +40,7 @@ ollama-tool-cli update
 # Update a specific model
 ollama-tool-cli update llama3.2
 
-# Backup all models to default location (~/Downloads/ollama_model_backups)
+# Backup all models to default location (~/Downloads/ollama_models_backup)
 ollama-tool-cli backup
 
 # Backup to custom path
@@ -83,7 +83,7 @@ Update one or all Ollama models. If no model name is provided, updates all model
 - `--background, -b`: Run command in background
 
 #### `backup [--path PATH] [--model MODEL]`
-Backup Ollama models to zip files. By default backs up all models to `~/Downloads/ollama_model_backups`.
+Backup Ollama models to zip files. By default backs up all models to `~/Downloads/ollama_models_backup`.
 
 - `--path, -p`: Custom backup directory path
 - `--model, -m`: Backup only a specific model

@@ -26,7 +26,7 @@ MODELS_PATH = {
     "macos": Path("~/.ollama/models").expanduser(),
     "windows": Path("C:\\Users\\%USERNAME%\\.ollama\\models").expanduser(),
 }
-BACKUP_PATH = Path("~/Downloads/ollama_model_backups").expanduser()
+BACKUP_PATH = Path("~/Downloads/ollama_models_backup").expanduser()
 LOG_FILE_MAX_BYTES = 10 * 1024 * 1024
 LOG_FILE_BACKUPS = 5
 
