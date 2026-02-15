@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from json import loads
 from os import cpu_count, getenv
 from pathlib import Path
+from shutil import which
 from subprocess import PIPE, Popen
 from sys import argv, platform
 from time import sleep
@@ -28,13 +29,12 @@ MODELS_PATH = {
 }
 BACKUP_PATH = Path("~/Downloads/ollama_models_backup").expanduser()
 LOG_FILE_MAX_BYTES = 10 * 1024 * 1024
-LOG_FILE_BACKUPS = 5
+LOG_FILE_BACKUPS = 3
 
 
-def run_command(command: str | list[str]) -> CMDOutput:
+def run_command(command: list[str]) -> CMDOutput:
     process = Popen(
         command,
-        shell=True,
         stdout=PIPE,
         stderr=PIPE,
         stdin=PIPE,
@@ -51,12 +51,8 @@ def run_command(command: str | list[str]) -> CMDOutput:
     )
 
 
-def default_jobs() -> int:
-    return min(4, cpu_count() or 1)
-
-
 def resolve_jobs(value: int | None) -> int:
-    jobs = default_jobs() if value is None else value
+    jobs = min(4, cpu_count() or 1) if value is None else value
     return max(1, jobs)
 
 
@@ -69,7 +65,7 @@ def log_dir() -> Path:
     if platform.lower() == "win32":
         base_dir = getenv("LOCALAPPDATA") or getenv("APPDATA") or "~"
         return Path(base_dir).expanduser() / "ollama-tool-cli" / "Logs"
-    return Path("~/Library/Logs/ollama-tool-cli").expanduser()
+    return Path("./ollama-tool-cli").expanduser()
 
 
 def rotate_log_file(file_path: Path) -> None:
@@ -112,7 +108,6 @@ def spawn_background() -> None:
             stderr=stderr_handle,
             stdin=PIPE,
             creationflags=creationflags,
-            shell=False,
             text=True,
         )
     else:
@@ -122,11 +117,11 @@ def spawn_background() -> None:
             stderr=stderr_handle,
             stdin=PIPE,
             start_new_session=True,
-            shell=False,
             text=True,
         )
 
     typer.echo(f"Running in background. PID: {process.pid}")
+    typer.echo("View logs with: ollama-tool-cli logs --follow")
     typer.echo(f"Logs: {log_file}")
     raise typer.Exit(code=0)
 
@@ -172,19 +167,32 @@ def follow_log(file_path: Path) -> None:
 
 
 def check_ollama_installed() -> bool:
-    result = run_command("which ollama")
-    return result.return_code == 0
+    return which("ollama") is not None
 
 
 def ollama_version() -> str:
-    result = run_command("ollama --version")
-    return result.output_text.split("is")[1].strip()
+    result = run_command(["ollama", "--version"])
+    output = result.output_text.strip()
+    if not output:
+        return "unknown"
+    if " is " in output:
+        return output.split(" is ", 1)[1].strip()
+    return output
+
+
+def check_installation() -> None:
+    if not check_ollama_installed():
+        typer.echo(
+            "Error: Ollama is not installed. Please install Ollama before using this tool.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
 
 
 def create_backup(path_to_backup: list[Path], backup_path: Path) -> None:
     with ZipFile(backup_path, "w") as zfile:
         for file in path_to_backup:
-            zfile.write(file)
+            zfile.write(file, arcname=file.relative_to(file.anchor))
 
 
 def ollama_models_path() -> Path:
@@ -201,20 +209,22 @@ def ollama_models_path() -> Path:
 
 
 def models() -> list[str]:
-    result = run_command("ollama list").output_text.strip().split("\n")
+    result = run_command(["ollama", "list"]).output_text.strip().split("\n")
     return [line.split()[0] for line in result[1:]]
 
 
-def update_models(model_names: list[str]) -> None:
+def update_models(model_names: list[str]) -> CMDOutput:
     for model_name in model_names:
-        run_command(f"ollama pull {model_name}")
+        typer.echo(f"Updating model: {model_name}")
+        res = run_command(["ollama", "pull", model_name])
+    return res
 
 
 def update_models_parallel(model_names: list[str], jobs: int) -> list[str]:
     failures: list[str] = []
 
     with ThreadPoolExecutor(max_workers=jobs) as executor:
-        future_map = {executor.submit(run_command, f"ollama pull {model}"): model for model in model_names}
+        future_map = {executor.submit(update_models, [model]): model for model in model_names}
         for future in as_completed(future_map):
             model = future_map[future]
             result = future.result()
@@ -223,21 +233,24 @@ def update_models_parallel(model_names: list[str], jobs: int) -> list[str]:
     return failures
 
 
-def backup_single_model(
-    models_path: Path,
-    backup_path: Path,
-    model: str,
-) -> str | None:
+def backup_single_model(models_path: Path, backup_path: Path, model: str) -> None:
     model_name, model_version = model.split(":") if ":" in model else (model, "latest")
     model_schema_path = models_path / f"manifests/registry.ollama.ai/library/{model_name}/{model_version}"
+    if not model_schema_path.exists():
+        msg = f"Model manifest not found for: {model}"
+        raise FileNotFoundError(msg)
     model_layers = loads(Path(model_schema_path).read_bytes())["layers"]
 
     digests_path = [models_path / "blobs" / layer["digest"].replace(":", "-") for layer in model_layers]
     digests_path.append(model_schema_path)
 
+    missing_files = [path for path in digests_path if not path.exists()]
+    if missing_files:
+        msg = f"Missing model blob(s) for {model}: {', '.join(str(path) for path in missing_files)}"
+        raise FileNotFoundError(msg)
+
     archive_path = backup_path / f"{model_name}-{model_version}.zip"
     create_backup(digests_path, archive_path)
-    return None
 
 
 def backup_models(backup_path: Path = BACKUP_PATH, model: str | None = None) -> None:
@@ -250,11 +263,7 @@ def backup_models(backup_path: Path = BACKUP_PATH, model: str | None = None) -> 
         backup_single_model(models_path, backup_path, model_name)
 
 
-def backup_models_parallel(
-    backup_path: Path,
-    model_list: list[str],
-    jobs: int,
-) -> list[str]:
+def backup_models_parallel(backup_path: Path, model_list: list[str], jobs: int) -> list[str]:
     models_path = ollama_models_path()
     backup_path = Path(backup_path)
     backup_path.mkdir(parents=True, exist_ok=True)
@@ -295,41 +304,33 @@ def restore_many(backup_paths: list[Path], jobs: int) -> list[Path]:
     return failures
 
 
-app = typer.Typer(no_args_is_help=True)
-
-
-def check_installation() -> None:
-    if not check_ollama_installed():
-        typer.echo(
-            "Error: Ollama is not installed. Please install Ollama to proceed.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
+app = typer.Typer(
+    name="ollama-tool-cli",
+    no_args_is_help=True,
+)
 
 
 @app.command()
 def list() -> None:
     """List all installed Ollama models."""
-    check_installation()
     model_list = models()
 
     if not model_list:
-        typer.echo("No models installed.")
+        typer.echo("No models are installed. Use `ollama pull <model>` to install one.")
         return
 
-    typer.echo("\nInstalled Models:")
+    typer.echo(f"\nInstalled {len(model_list)} model(s):")
     typer.echo("-" * 40)
     for model in model_list:
         typer.echo(f"  • {model}")
     typer.echo("-" * 40)
-    typer.echo(f"\nTotal: {len(model_list)} model(s)")
 
 
 @app.command()
 def update(
     model: str = typer.Argument(
         None,
-        help="Model name to update (updates all if not provided)",
+        help="Model name to update (updates all models if not provided)",
     ),
     jobs: int | None = typer.Option(
         None,
@@ -337,16 +338,15 @@ def update(
         "-j",
         help="Number of parallel jobs",
     ),
+    *,
     background: bool = typer.Option(
         False,
         "--background",
         "-b",
-        help="Run command in background",
+        help="Run the command in the background",
     ),
 ) -> None:
     """Update one or all Ollama models."""
-    check_installation()
-
     if background:
         spawn_background()
 
@@ -373,13 +373,13 @@ def backup(
         BACKUP_PATH,
         "--path",
         "-p",
-        help="Directory to save backups (default: ~/Downloads/ollama_model_backups)",
+        help="Directory where backups are saved (default: ~/Downloads/ollama_models_backup)",
     ),
     model: str | None = typer.Option(
         None,
         "--model",
         "-m",
-        help="Specific model to backup (backs up all if not provided)",
+        help="Specific model to back up (backs up all models if not provided)",
     ),
     jobs: int | None = typer.Option(
         None,
@@ -391,12 +391,10 @@ def backup(
         False,
         "--background",
         "-b",
-        help="Run command in background",
+        help="Run the command in the background",
     ),
 ) -> None:
-    """Backup Ollama models to a zip file."""
-    check_installation()
-
+    """Back up Ollama models to zip files."""
     if background:
         spawn_background()
 
@@ -405,7 +403,7 @@ def backup(
     typer.echo(f"Backing up models to: {backup_path}")
     model_list = [model] if model else models()
     if not model_list:
-        typer.echo("No models to backup.")
+        typer.echo("No models to back up.")
         return
     failures = backup_models_parallel(backup_path, model_list, jobs)
     if failures:
@@ -419,7 +417,7 @@ def backup(
 def restore(
     backup_path: Path = typer.Argument(
         ...,
-        help="Path to backup zip file or directory",
+        help="Path to a backup zip file or a directory of backup zip files",
     ),
     jobs: int | None = typer.Option(
         None,
@@ -431,12 +429,10 @@ def restore(
         False,
         "--background",
         "-b",
-        help="Run command in background",
+        help="Run the command in the background",
     ),
 ) -> None:
-    """Restore Ollama models from backup."""
-    check_installation()
-
+    """Restore Ollama models from backups."""
     if background:
         spawn_background()
 
@@ -471,7 +467,6 @@ def restore(
 @app.command()
 def info() -> None:
     """Show Ollama installation information."""
-    check_installation()
     typer.echo(f"Ollama Version: {ollama_version()}")
     typer.echo(f"Platform: {platform}")
     typer.echo(f"Installed Models: {len(models())}")
@@ -488,7 +483,7 @@ def logs(
         help="Follow the log output",
     ),
 ) -> None:
-    """Show log file location or follow logs."""
+    """Show the log file location or follow logs."""
     log_path = log_dir()
     log_file = log_path / "ollama-tool-cli.log"
     if follow:
@@ -500,7 +495,12 @@ def logs(
 
 
 def main() -> None:
+    check_installation()
     app()
+
+
+def run() -> None:
+    main()
 
 
 if __name__ == "__main__":
