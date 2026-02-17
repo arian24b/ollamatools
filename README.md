@@ -1,6 +1,6 @@
 # Ollama Tool CLI 🦙
 
-A modern CLI tool for managing Ollama models - backup, restore, update, and list your models with ease.
+A modern CLI tool for managing Ollama models—back up, restore, update, and list your models with ease.
 
 ## Installation
 
@@ -40,7 +40,7 @@ ollama-tool-cli update
 # Update a specific model
 ollama-tool-cli update llama3.2
 
-# Backup all models to default location (~/Downloads/ollama_model_backups)
+# Backup all models to default location (~/Downloads/ollama_models_backup)
 ollama-tool-cli backup
 
 # Backup to custom path
@@ -77,13 +77,13 @@ ollama-tool-cli logs --follow
 Display all installed Ollama models with their versions.
 
 #### `update [model]`
-Update one or all Ollama models. If no model name is provided, updates all models.
+Update one model or all models. If no model name is provided, all installed models are updated.
 
 - `--jobs, -j`: Number of parallel jobs
 - `--background, -b`: Run command in background
 
 #### `backup [--path PATH] [--model MODEL]`
-Backup Ollama models to zip files. By default backs up all models to `~/Downloads/ollama_model_backups`.
+Back up Ollama models to zip files. By default, all models are backed up to `~/Downloads/ollama_models_backup`.
 
 - `--path, -p`: Custom backup directory path
 - `--model, -m`: Backup only a specific model
@@ -91,13 +91,13 @@ Backup Ollama models to zip files. By default backs up all models to `~/Download
 - `--background, -b`: Run command in background
 
 #### `restore <path>`
-Restore Ollama models from a backup zip file or directory.
+Restore Ollama models from a backup zip file or from a directory containing backup zip files.
 
 - `--jobs, -j`: Number of parallel jobs
 - `--background, -b`: Run command in background
 
 #### `info`
-Show detailed Ollama installation information including version, models path, platform, and number of installed models.
+Show detailed installation information, including the Ollama version, models path, platform, and number of installed models.
 
 #### `logs`
 Show log file locations or follow logs.
@@ -128,8 +128,8 @@ uv build
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT License — see the LICENSE file for details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Feel free to submit a pull request.
