@@ -189,10 +189,10 @@ def check_installation() -> None:
         raise typer.Exit(code=1)
 
 
-def create_backup(path_to_backup: list[Path], backup_path: Path) -> None:
+def create_backup(path_to_backup: list[Path], backup_path: Path, base_path: Path) -> None:
     with ZipFile(backup_path, "w") as zfile:
         for file in path_to_backup:
-            zfile.write(file, arcname=file.relative_to(file.anchor))
+            zfile.write(file, arcname=file.relative_to(base_path))
 
 
 def ollama_models_path() -> Path:
@@ -250,7 +250,7 @@ def backup_single_model(models_path: Path, backup_path: Path, model: str) -> Non
         raise FileNotFoundError(msg)
 
     archive_path = backup_path / f"{model_name}-{model_version}.zip"
-    create_backup(digests_path, archive_path)
+    create_backup(digests_path, archive_path, models_path)
 
 
 def backup_models(backup_path: Path = BACKUP_PATH, model: str | None = None) -> None:
