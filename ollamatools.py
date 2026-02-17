@@ -214,10 +214,15 @@ def models() -> list[str]:
 
 
 def update_models(model_names: list[str]) -> CMDOutput:
+    last_result = CMDOutput(output_text="", error_text="No models to update", return_code=0)
+    if not model_names:
+        return last_result
+
     for model_name in model_names:
         typer.echo(f"Updating model: {model_name}")
-        res = run_command(["ollama", "pull", model_name])
-    return res
+        last_result = run_command(["ollama", "pull", model_name])
+
+    return last_result
 
 
 def update_models_parallel(model_names: list[str], jobs: int) -> list[str]:
