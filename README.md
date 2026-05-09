@@ -133,3 +133,11 @@ MIT License — see the LICENSE file for details.
 ## Contributing
 
 Contributions are welcome! Feel free to submit a pull request.
+
+## Related Projects
+
+Explore other CLI tools by Arian Omrani:
+
+- **[LinkCovery](https://github.com/arian24b/linkcovery)** - Modern bookmark management CLI tool
+- **[PEM](https://github.com/arian24b/pem)** - Python Execution Manager - Schedule and execute Python scripts
+- **[ThroneTools](https://github.com/arian24b/thronetools)** - Cross-platform installer and management CLI for Throne

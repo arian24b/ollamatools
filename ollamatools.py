@@ -10,6 +10,32 @@ from time import sleep
 from zipfile import ZipFile
 
 import typer
+from rich.console import Console
+
+console = Console()
+
+BANNER = r"""
+      ____                      _
+     / ___|__ _ ___  ___       | |  ___  _ __   __ _  ___
+    | |   / _` / __|/ _ \      | | / _ \| '_ \ / _` |/ _ \
+    | |__| (_| \__ \  __/      | || (_) | | | | (_| |  __/
+     \____\__,_|___/\___|      |_| \___/|_| |_|\__,_|\___|
+    __  __              _   _      _                 _
+    \ \/ /__  _   _   | | | |    | |__  _   _  ___| |_
+     \  // _ \| | | |  | |_| |    | '_ \| | | |/ __| __|
+     / /| (_) | |_| |  |  _  |    | |_) | |_| | (__| |_
+    /_/ \___/ \__,_|  |_| |_|    |_.__/ \__,_|\___|\__|
+
+"""
+
+VERSION = "1.0.0"
+
+
+def show_banner() -> None:
+    """Display the OllamaTools banner."""
+    console.print(BANNER, style="cyan")
+    console.print(f"  [bold]OllamaTools[/bold] v{VERSION}")
+    console.print("  [dim]Ollama model management CLI[/dim]\n")
 
 
 @dataclass
@@ -472,11 +498,12 @@ def restore(
 @app.command()
 def info() -> None:
     """Show Ollama installation information."""
-    typer.echo(f"Ollama Version: {ollama_version()}")
-    typer.echo(f"Platform: {platform}")
-    typer.echo(f"Installed Models: {len(models())}")
-    typer.echo(f"Models Path: {ollama_models_path()}")
-    typer.echo(f"Logs: {log_dir()}")
+    show_banner()
+    console.print(f"[bold]Ollama Version:[/bold] {ollama_version()}")
+    console.print(f"[bold]Platform:[/bold] {platform}")
+    console.print(f"[bold]Installed Models:[/bold] {len(models())}")
+    console.print(f"[bold]Models Path:[/bold] {ollama_models_path()}")
+    console.print(f"[bold]Logs:[/bold] {log_dir()}")
 
 
 @app.command()
