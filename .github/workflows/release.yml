@@ -34,15 +34,11 @@ jobs:
           git config user.name ${{ github.actor }}
           git config user.email ${{ github.actor }}@users.noreply.github.com
 
-      - name: Install semantic-release
-        run: |
-          uv tool install python-semantic-release
-
       - name: Run semantic release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: semantic-release version --changelog --tag
+        run: uvx semantic-release version --changelog --tag
 
       - name: Build package
         run: uv build
