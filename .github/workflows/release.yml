@@ -38,7 +38,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
-        run: uvx semantic-release version --changelog --tag
+        run: uvx python-semantic-release version --changelog --tag
 
       - name: Build package
         run: uv build
