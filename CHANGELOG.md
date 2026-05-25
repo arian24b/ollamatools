@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.3.4 (2026-05-25)
+
+### Bug Fixes
+
+- Update CI workflows and project description
+  ([`cd98781`](https://github.com/arian24b/ollamatools/commit/cd98781a2798cb6f9813407aa0941878bd723372))
+
+
 ## v1.3.3 (2026-05-25)
 
 ### Bug Fixes

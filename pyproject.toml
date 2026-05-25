@@ -1,6 +1,6 @@
 [project]
 name = "ollama-tool-cli"
-version = "1.3.3"
+version = "1.3.4"
 description = "CLI tool for Ollama - backup, restore, update, and list models"
 
 readme = "README.md"
