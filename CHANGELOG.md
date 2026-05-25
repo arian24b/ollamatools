@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.3.2 (2026-05-25)
+
+### Bug Fixes
+
+- Remove PYPI_TOKEN from release workflow
+  ([`a6ee6cf`](https://github.com/arian24b/ollamatools/commit/a6ee6cfa832a1d5518ac4155ad9c6611d325b501))
+
+
 ## v1.3.1 (2026-05-25)
 
 ### Bug Fixes
