@@ -21,8 +21,8 @@ classifiers = [
 ]
 keywords = ["ollama", "cli", "models", "backup", "restore", "llm", "ai"]
 dependencies = [
-    "rich>=13.0.0",
-    "typer>=0.23.1",
+ "rich>=15.0.0",
+ "typer>=0.25.1",
 ]
 
 [project.scripts]
