@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.3.5 (2026-05-25)
+
+### Bug Fixes
+
+- Use head branch instead of head SHA in release workflow
+  ([`5a0efb6`](https://github.com/arian24b/ollamatools/commit/5a0efb6700c4947fc4e2118bc900b8a49d813259))
+
+### Chores
+
+- Trigger release workflow on CI completion
+  ([`b4df859`](https://github.com/arian24b/ollamatools/commit/b4df85945ba0c3cbafa9ac30b93886f2e225f5ae))
+
+
 ## v1.3.4 (2026-05-25)
 
 ### Bug Fixes
