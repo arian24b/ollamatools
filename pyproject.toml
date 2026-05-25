@@ -76,4 +76,6 @@ ignore = [
     "S101",   # Use of assert detected (needed for tests)
     "T20",    # print statements (CLI tool)
     "A003",   # Class attribute shadows builtin
+    "B008",   # Function calls in arg defaults (Typer/Click idiom)
+    "SIM115", # Open without context manager (intentional in follow_log)
 ]

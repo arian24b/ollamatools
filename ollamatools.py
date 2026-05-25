@@ -106,7 +106,7 @@ LOG_FILE_BACKUPS = 3
 
 
 def run_command(command: list[str]) -> CMDOutput:
-    process = Popen(
+    process = Popen(  # noqa: S603
         command,
         stdout=PIPE,
         stderr=PIPE,
@@ -173,7 +173,7 @@ def spawn_background() -> None:
     with open(log_file, "a", encoding="utf-8") as std_handle:
         if platform.lower() == "win32":
             creationflags = 0x00000008 | 0x00000200
-            process = Popen(
+            process = Popen(  # noqa: S603
                 command,
                 stdout=std_handle,
                 stderr=std_handle,
@@ -182,7 +182,7 @@ def spawn_background() -> None:
                 text=True,
             )
         else:
-            process = Popen(
+            process = Popen(  # noqa: S603
                 command,
                 stdout=std_handle,
                 stderr=std_handle,
