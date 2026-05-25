@@ -14,17 +14,17 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Set up UV
-        uses: astral-sh/setup-uv@v4
-        with:
-          python-version: "3.14"
+        uses: astral-sh/setup-uv@v7
 
       - name: Install dependencies
         run: uv sync
