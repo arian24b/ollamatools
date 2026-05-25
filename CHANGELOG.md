@@ -2,6 +2,30 @@
 
 <!-- version list -->
 
+## v1.3.1 (2026-05-25)
+
+### Bug Fixes
+
+- Suppress subprocess linting warnings
+  ([`d864f1d`](https://github.com/arian24b/ollamatools/commit/d864f1d21fd4f401275f2bca6faa6b7841d64fd7))
+
+- Use full package name for semantic-release in CI
+  ([`ef78dac`](https://github.com/arian24b/ollamatools/commit/ef78dac0c5854e0a24030bcd34ef85896d6067f5))
+
+- Use uvx for ruff and semantic-release in CI workflows
+  ([`efb3c52`](https://github.com/arian24b/ollamatools/commit/efb3c5203778615e04d66f043e448f486613db9c))
+
+### Chores
+
+- Update dependencies
+  ([`13bff24`](https://github.com/arian24b/ollamatools/commit/13bff240e952f90251f312f17a01c1222fefac0d))
+
+### Refactoring
+
+- Improve CLI user experience with rich formatting
+  ([`5ada69e`](https://github.com/arian24b/ollamatools/commit/5ada69e6d5b43386a24f54f6a12da46ee2f76708))
+
+
 ## v1.3.0 (2026-02-17)
 
 ### Bug Fixes
