@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.3.3 (2026-05-25)
+
+### Bug Fixes
+
+- Update CLI entry point to use main function
+  ([`8762aa7`](https://github.com/arian24b/ollamatools/commit/8762aa72ec00912b28ba589542e73f8d969d1b60))
+
+
 ## v1.3.2 (2026-05-25)
 
 ### Bug Fixes
