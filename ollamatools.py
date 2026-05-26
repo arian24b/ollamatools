@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
+from importlib.metadata import version as pkg_version
 from json import loads
 from os import cpu_count, getenv
 from pathlib import Path
@@ -33,7 +34,7 @@ BANNER = r"""
       ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
 """
 
-VERSION = "1.0.0"
+VERSION = pkg_version("ollamatools")
 
 
 def show_banner() -> None:

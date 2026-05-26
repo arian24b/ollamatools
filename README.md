@@ -2,6 +2,15 @@
 
 A modern CLI tool for managing Ollama models—back up, restore, update, and list your models with ease.
 
+[![GitHub stars](https://img.shields.io/github/stars/arian24b/ollamatools.svg?style=social&label=Star)](https://github.com/arian24b/ollamatools)
+[![GitHub forks](https://img.shields.io/github/forks/arian24b/ollamatools.svg?style=social&label=Fork)](https://github.com/arian24b/ollamatools)
+[![GitHub issues](https://img.shields.io/github/issues/arian24b/ollamatools.svg)](https://github.com/arian24b/ollamatools/issues)
+[![Actions Status](https://github.com/arian24b/ollamatools/workflows/Test/badge.svg)](https://github.com/arian24b/ollamatools/actions)
+[![Coverage Status](https://coveralls.io/repos/github/arian24b/ollamatools/badge.svg?branch=main)](https://coveralls.io/github/arian24b/ollamatools?branch=main)
+[![License: MIT](https://ollamatools.readthedocs.io/en/stable/_static/license.svg)](https://github.com/arian24b/ollamatools/blob/main/LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/ollamatools)](https://pypi.org/project/ollamatools/)
+[![Supported Python Versions](https://img.shields.io/pypi/pyversions/ollamatools?color=brightgreen)](https://pypi.org/project/ollamatools)
+
 ## Installation
 
 ### Using uv
