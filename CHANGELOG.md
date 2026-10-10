@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.3.6 (2026-10-10)
+
+### Bug Fixes
+
+- Update README badges and automate versioning
+  ([`20ac2aa`](https://github.com/arian24b/ollamatools/commit/20ac2aa1ad4383a28727cd601c76158d18f1c936))
+
+
 ## v1.3.5 (2026-05-25)
 
 ### Bug Fixes
