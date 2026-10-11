@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from json import loads
 from os import cpu_count, getenv
@@ -9,7 +8,8 @@ from sys import argv, platform
 from time import sleep
 from zipfile import ZipFile
 
-from cfui import App, Arg, Fail, ui
+from cfui import App, Arg, Fail, run_parallel, ui
+from cfui.common import BACKGROUND, JOBS
 
 
 @dataclass
@@ -218,24 +218,6 @@ def update_models(model_names: list[str]) -> CMDOutput:
     return last_result
 
 
-def run_parallel(items: list, worker, jobs: int, label=str) -> list:
-    """Run worker(item) on a thread pool, print one status line per item, return the failed items."""
-    failures: list = []
-    with ThreadPoolExecutor(max_workers=jobs) as executor:
-        futures = {executor.submit(worker, item): item for item in items}
-        for future in as_completed(futures):
-            item = futures[future]
-            try:
-                result = future.result()
-                ok = getattr(result, "return_code", 0) == 0
-            except Exception:
-                ok = False
-            (ui.success if ok else ui.error)(label(item))
-            if not ok:
-                failures.append(item)
-    return failures
-
-
 def update_models_parallel(model_names: list[str], jobs: int) -> list[str]:
     return run_parallel(model_names, lambda m: update_models([m]), jobs)
 
@@ -298,9 +280,6 @@ def restore_model(backup_path: Path) -> None:
 def restore_models(backup_paths: list[Path], jobs: int) -> list[Path]:
     return run_parallel(backup_paths, restore_model, jobs, label=lambda p: p.name)
 
-
-JOBS = Arg("-j", "--jobs", type=int, help="Number of parallel jobs")
-BACKGROUND = Arg("-b", "--background", action="store_true", help="Run the command in the background")
 
 cli = App(
     "ollama-tool-cli",
