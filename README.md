@@ -44,10 +44,10 @@ ollama-tool-cli
 ollama-tool-cli list
 
 # Update all models
-ollama-tool-cli update
+ollama-tool-cli update-models
 
 # Update a specific model
-ollama-tool-cli update llama3.2
+ollama-tool-cli update-models llama3.2
 
 # Backup all models to default location (~/Downloads/ollama_models_backup)
 ollama-tool-cli backup
@@ -150,3 +150,16 @@ Explore other CLI tools by Arian Omrani:
 - **[LinkCovery](https://github.com/arian24b/linkcovery)** - Modern bookmark management CLI tool
 - **[PEM](https://github.com/arian24b/pem)** - Python Execution Manager - Schedule and execute Python scripts
 - **[ThroneTools](https://github.com/arian24b/thronetools)** - Cross-platform installer and management CLI for Throne
+
+## Common commands
+
+Built with [cfui](https://github.com/arian24b/cfui), so every command shares the same look and flags:
+
+```bash
+ollama-tool-cli help [command]     # help
+ollama-tool-cli version            # version and git repo (also: ollama-tool-cli -v)
+ollama-tool-cli update [--check]   # self update
+ollama-tool-cli -q ...             # quiet: no banners/notes (or OLLAMA_TOOL_CLI_QUIET=1)
+```
+
+Missing required options are asked for interactively on a TTY; in pipes/CI they fail with `--flag is required`.
