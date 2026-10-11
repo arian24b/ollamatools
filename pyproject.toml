@@ -22,11 +22,8 @@ classifiers = [
 ]
 keywords = ["ollama", "cli", "models", "backup", "restore", "llm", "ai"]
 dependencies = [
- "cfuicli>=0.2.0",
+ "cfuicli>=1.0.0",
 ]
-
-[tool.uv.sources]
-cfuicli = { path = "../cfui", editable = true }  # drop once cfui is on PyPI
 
 [project.scripts]
 ollama-tool-cli = "ollamatools:main"
