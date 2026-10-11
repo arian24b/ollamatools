@@ -1,165 +1,82 @@
-# Ollama Tool CLI 🦙
+# ollama-tool-cli
 
-A modern CLI tool for managing Ollama models—back up, restore, update, and list your models with ease.
+[فارسی](README.fa.md)
 
-[![GitHub stars](https://img.shields.io/github/stars/arian24b/ollamatools.svg?style=social&label=Star)](https://github.com/arian24b/ollamatools)
-[![GitHub forks](https://img.shields.io/github/forks/arian24b/ollamatools.svg?style=social&label=Fork)](https://github.com/arian24b/ollamatools)
-[![GitHub issues](https://img.shields.io/github/issues/arian24b/ollamatools.svg)](https://github.com/arian24b/ollamatools/issues)
-[![Actions Status](https://github.com/arian24b/ollamatools/workflows/Test/badge.svg)](https://github.com/arian24b/ollamatools/actions)
-[![Coverage Status](https://coveralls.io/repos/github/arian24b/ollamatools/badge.svg?branch=main)](https://coveralls.io/github/arian24b/ollamatools?branch=main)
-[![License: MIT](https://ollamatools.readthedocs.io/en/stable/_static/license.svg)](https://github.com/arian24b/ollamatools/blob/main/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/ollamatools)](https://pypi.org/project/ollamatools/)
-[![Supported Python Versions](https://img.shields.io/pypi/pyversions/ollamatools?color=brightgreen)](https://pypi.org/project/ollamatools)
+List, update, back up and restore your [Ollama](https://ollama.com) models from the command line. Backups are plain zip files you can copy to another machine.
 
-## Installation
+## Install
 
-### Using uv
+Needs Python 3.12 to 3.15 and Ollama on your `PATH`.
 
 ```bash
-uv add ollama-tool-cli
+uv tool install ollama-tool-cli      # or: pipx install ollama-tool-cli
+ollama-tool-cli --help
 ```
 
-### From source
+From a clone: `uv sync && uv run ollama-tool-cli --help`.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `list` | table of installed models with size and modified time |
+| `update-models [MODEL] [-j N] [-b]` | pull the newest version of one model, or of all of them |
+| `backup [-p DIR] [-m MODEL] [-j N] [-b]` | write each model to a zip (default `~/Downloads/ollama_models_backup`) |
+| `restore PATH [-j N] [-b]` | restore from one zip, or from every zip in a directory |
+| `info` | Ollama version, platform, number of models, models path, log path |
+| `logs [-f]` | print the log file path, or follow it |
+
+`-j/--jobs` sets the number of parallel jobs and `-b/--background` runs the command detached and writes to the log. `restore` asks for the path if you leave it out.
+
+> `update-models` used to be `update`. `update` now updates the tool itself (see below).
+
+## Examples
 
 ```bash
-git clone https://github.com/arian24b/ollamatools.git
-cd ollamatools
-uv sync
-```
-
-## Requirements
-
-- Python 3.10 or higher
-- Ollama installed and running
-
-## Usage
-
-### Basic Commands
-
-```bash
-# Show help
-ollama-tool-cli
-
-# List all installed models
 ollama-tool-cli list
-
-# Update all models
-ollama-tool-cli update-models
-
-# Update a specific model
-ollama-tool-cli update-models llama3.2
-
-# Backup all models to default location (~/Downloads/ollama_models_backup)
-ollama-tool-cli backup
-
-# Backup to custom path
-ollama-tool-cli backup --path /path/to/backup
-
-# Backup a specific model
-ollama-tool-cli backup --model llama3.2
-
-# Backup with parallel jobs
-ollama-tool-cli backup --jobs 4
-
-# Run backup in background
-ollama-tool-cli backup --background
-
-# Restore from backup
-ollama-tool-cli restore /path/to/backup.zip
-
-# Restore all backups in a directory
-ollama-tool-cli restore /path/to/backup_dir
-
-# Show installation information and version
-ollama-tool-cli info
-
-# Show log paths
-ollama-tool-cli logs
-
-# Follow logs
+ollama-tool-cli update-models                    # every model
+ollama-tool-cli update-models llama3.2 -j 2
+ollama-tool-cli backup --path /mnt/backup --model llama3.2
+ollama-tool-cli backup --jobs 4 --background
+ollama-tool-cli restore /mnt/backup              # a directory of zips
 ollama-tool-cli logs --follow
 ```
 
-### Command Details
-
-#### `list`
-Display all installed Ollama models with their versions.
-
-#### `update [model]`
-Update one model or all models. If no model name is provided, all installed models are updated.
-
-- `--jobs, -j`: Number of parallel jobs
-- `--background, -b`: Run command in background
-
-#### `backup [--path PATH] [--model MODEL]`
-Back up Ollama models to zip files. By default, all models are backed up to `~/Downloads/ollama_models_backup`.
-
-- `--path, -p`: Custom backup directory path
-- `--model, -m`: Backup only a specific model
-- `--jobs, -j`: Number of parallel jobs
-- `--background, -b`: Run command in background
-
-#### `restore <path>`
-Restore Ollama models from a backup zip file or from a directory containing backup zip files.
-
-- `--jobs, -j`: Number of parallel jobs
-- `--background, -b`: Run command in background
-
-#### `info`
-Show detailed installation information, including the Ollama version, models path, platform, and number of installed models.
-
-#### `logs`
-Show log file locations or follow logs.
-
-- `--follow, -f`: Follow the log output
+Each model prints one status line when it finishes. The command exits non-zero if any model failed.
 
 ## Background logs
 
-Background commands write to an OS-specific log directory with size-based rotation:
+Background commands write to a log file that rotates by size:
 
 - macOS: `~/Library/Logs/ollama-tool-cli/`
 - Linux: `${XDG_STATE_HOME:-~/.local/state}/ollama-tool-cli/logs/`
 - Windows: `%LOCALAPPDATA%\ollama-tool-cli\Logs\`
 
-## Development
+## Common commands
 
-### Setup development environment
+Built on [cfuicli](https://github.com/arian24b/cfui), so it looks and behaves like the other tools in this family.
+
+```bash
+ollama-tool-cli help [command]     # help; -h works on any command
+ollama-tool-cli version            # version and git repository (also: -v)
+ollama-tool-cli update [--check]   # update the tool itself; --check only compares versions
+ollama-tool-cli -q ...             # quiet: no banner or notes (or OLLAMA_TOOL_CLI_QUIET=1)
+```
+
+- A missing required option is asked for when you run the tool in a terminal. In a pipe or in CI it stops with `--flag is required. Pass --flag <value> or run interactively.` (exit code 2).
+- Errors appear in a red box on stderr with a non-zero exit code. Ctrl-C exits with 130.
+- Color is used only on a terminal. `NO_COLOR=1` turns it off.
+
+## Development
 
 ```bash
 uv sync
-```
-
-### Build the package
-
-```bash
+uv run ruff check . && uv run ruff format --check .
 uv build
 ```
 
+Related tools: [LinkCovery](https://github.com/arian24b/linkcovery), [PEM](https://github.com/arian24b/pem), [ThroneTools](https://github.com/arian24b/thronetools).
+
 ## License
 
-MIT License — see the LICENSE file for details.
-
-## Contributing
-
-Contributions are welcome! Feel free to submit a pull request.
-
-## Related Projects
-
-Explore other CLI tools by Arian Omrani:
-
-- **[LinkCovery](https://github.com/arian24b/linkcovery)** - Modern bookmark management CLI tool
-- **[PEM](https://github.com/arian24b/pem)** - Python Execution Manager - Schedule and execute Python scripts
-- **[ThroneTools](https://github.com/arian24b/thronetools)** - Cross-platform installer and management CLI for Throne
-
-## Common commands
-
-Built with [cfui](https://github.com/arian24b/cfui), so every command shares the same look and flags:
-
-```bash
-ollama-tool-cli help [command]     # help
-ollama-tool-cli version            # version and git repo (also: ollama-tool-cli -v)
-ollama-tool-cli update [--check]   # self update
-ollama-tool-cli -q ...             # quiet: no banners/notes (or OLLAMA_TOOL_CLI_QUIET=1)
-```
-
-Missing required options are asked for interactively on a TTY; in pipes/CI they fail with `--flag is required`.
+MIT
