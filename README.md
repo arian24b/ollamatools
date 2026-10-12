@@ -4,6 +4,10 @@
 
 List, update, back up and restore your [Ollama](https://ollama.com) models from the command line. Backups are plain zip files you can copy to another machine.
 
+## How it works
+
+The tool shells out to the `ollama` binary for `list` and `pull`. Backups do not use Ollama at all: for each model it reads the manifest under the Ollama models directory (`manifests/registry.ollama.ai/library/<name>/<tag>`), collects the blobs listed in its `layers`, and writes the manifest and blobs into one zip named `<model>-<tag>.zip`. Restore extracts the zip into the models directory. The models directory is fixed per platform: `/usr/share/ollama/.ollama/models` on Linux, `~/.ollama/models` on macOS. Run the tool as a user that can read and write that path.
+
 ## Install
 
 Needs Python 3.12 to 3.15 and Ollama on your `PATH`.
@@ -43,6 +47,8 @@ ollama-tool-cli logs --follow
 ```
 
 Each model prints one status line when it finishes. The command exits non-zero if any model failed.
+
+If Ollama is not on your `PATH`, every model command stops with `Ollama is not installed.` and exit code 1.
 
 ## Background logs
 
