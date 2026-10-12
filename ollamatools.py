@@ -1,6 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from importlib.metadata import version as pkg_version
 from json import loads
 from os import cpu_count, getenv
 from pathlib import Path
@@ -10,80 +8,8 @@ from sys import argv, platform
 from time import sleep
 from zipfile import ZipFile
 
-import typer
-import typer.core
-from rich import box
-from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.table import Table
-
-console = Console()
-
-BANNER = r"""
-██████╗ ██╗     ██╗      █████╗ ███╗   ███╗ █████╗
-██╔═══██╗██║     ██║     ██╔══██╗████╗ ████║██╔══██╗
-██║   ██║██║     ██║     ███████║██╔████╔██║███████║
-██║   ██║██║     ██║     ██╔══██║██║╚██╔╝██║██╔══██║
-╚██████╔╝███████╗███████╗██║  ██║██║ ╚═╝ ██║██║  ██║
-╚═════╝ ╚══════╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝
-   ████████╗ ██████╗  ██████╗ ██╗     ███████╗
-   ╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██╔════╝
-      ██║   ██║   ██║██║   ██║██║     ███████╗
-      ██║   ██║   ██║██║   ██║██║     ╚════██║
-      ██║   ╚██████╔╝╚██████╔╝███████╗███████║
-      ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
-"""
-
-VERSION = pkg_version("ollamatools")
-
-
-def show_banner() -> None:
-    """Display the OllamaTools banner."""
-    console.print(BANNER, style="cyan")
-    console.print(f"[bold]OllamaTools[/bold] v{VERSION}")
-    console.print("[dim]Ollama management CLI[/dim]\n")
-
-
-class StyledGroup(typer.core.TyperGroup):
-    def format_help(self, ctx: typer.Context, formatter: object) -> None:
-        show_styled_help(ctx)
-
-
-def show_styled_help(ctx: typer.Context) -> None:
-    show_banner()
-
-    group = ctx.parent.command if ctx.parent is not None else ctx.command
-    cmd_path = ctx.parent.command_path if ctx.parent is not None else ctx.command_path
-
-    console.print("[bold]Usage:[/bold]")
-    console.print(f"  {cmd_path} [OPTIONS] COMMAND [ARGS]...\n")
-
-    commands = group.commands
-    if commands:
-        console.print("[bold]Commands:[/bold]")
-        table = Table(show_header=False, box=box.SIMPLE, padding=0)
-        table.add_column("Command", style="cyan", no_wrap=True)
-        table.add_column("Description")
-        for name, cmd in sorted(commands.items()):
-            if cmd.hidden:
-                continue
-            short_help = cmd.get_short_help_str(limit=60)
-            table.add_row(f"  {name}", short_help)
-        console.print(table)
-        console.print()
-
-    console.print("[bold]Options:[/bold]")
-    table = Table(show_header=False, box=box.SIMPLE, padding=0)
-    table.add_column("Option", style="cyan", no_wrap=True)
-    table.add_column("Description")
-    for param in group.params:
-        if param.name in ("help", "install_completion", "show_completion"):
-            continue
-        opts = ", ".join(param.opts)
-        help_text = param.help or ""
-        table.add_row(f"  {opts}", help_text)
-    table.add_row("  -h/--help", "Show this message and exit")
-    console.print(table)
+from cfui import App, Arg, Fail, run_parallel, ui
+from cfui.common import BACKGROUND, JOBS
 
 
 @dataclass
@@ -192,14 +118,14 @@ def spawn_background() -> None:
                 text=True,
             )
 
-    console.print(f"[dim]Running in background. PID:[/dim] {process.pid}")
-    console.print("[dim]View logs with:[/dim] [bold]ollama-tool-cli logs --follow[/bold]")
-    console.print(f"[dim]Logs:[/dim] {log_file}")
-    raise typer.Exit(code=0)
+    ui.info(f"Running in background. PID: {process.pid}")
+    ui.info("View logs with: ollama-tool-cli logs --follow")
+    ui.info(f"Logs: {log_file}")
+    raise SystemExit(0)
 
 
 def follow_log(file_path: Path) -> None:
-    typer.echo(f"Following logs: {file_path}")
+    ui.info(f"Following logs: {file_path}")
     file_handle = None
     position = 0
     try:
@@ -219,7 +145,7 @@ def follow_log(file_path: Path) -> None:
 
             line = file_handle.readline()
             if line:
-                typer.echo(line.rstrip("\n"))
+                ui.out(line.rstrip("\n"))
                 position = file_handle.tell()
                 continue
 
@@ -254,11 +180,7 @@ def ollama_version() -> str:
 
 def check_installation() -> None:
     if not check_ollama_installed():
-        typer.echo(
-            "Error: Ollama is not installed. Please install Ollama before using this tool.",
-            err=True,
-        )
-        raise typer.Exit(code=1)
+        raise Fail("Ollama is not installed.", "Install Ollama before using this tool.")
 
 
 def create_backup(path_to_backup: list[Path], backup_path: Path, base_path: Path) -> None:
@@ -297,31 +219,7 @@ def update_models(model_names: list[str]) -> CMDOutput:
 
 
 def update_models_parallel(model_names: list[str], jobs: int) -> list[str]:
-    failures: list[str] = []
-
-    with Progress(
-        SpinnerColumn(spinner_name="dots"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task_ids = {m: progress.add_task(f"  {m}", total=1) for m in model_names}
-
-        with ThreadPoolExecutor(max_workers=jobs) as executor:
-            futures = {executor.submit(update_models, [m]): m for m in model_names}
-            for future in as_completed(futures):
-                model_name = futures[future]
-                result = future.result()
-                if result.return_code == 0:
-                    progress.update(task_ids[model_name], description=f"[green]✓ {model_name}", completed=1)
-                else:
-                    progress.update(
-                        task_ids[model_name],
-                        description=f"[red]✗ {model_name}",
-                        completed=1,
-                    )
-                    failures.append(model_name)
-
-    return failures
+    return run_parallel(model_names, lambda m: update_models([m]), jobs)
 
 
 def backup_single_model(models_path: Path, backup_path: Path, model: str) -> None:
@@ -368,28 +266,7 @@ def backup_models_parallel(backup_path: Path, model_list: list[str], jobs: int) 
     models_path = ollama_models_path()
     backup_path = Path(backup_path)
     backup_path.mkdir(parents=True, exist_ok=True)
-    failures: list[str] = []
-
-    with Progress(
-        SpinnerColumn(spinner_name="dots"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task_ids = {m: progress.add_task(f"  {m}", total=1) for m in model_list}
-
-        with ThreadPoolExecutor(max_workers=jobs) as executor:
-            future_map = {
-                executor.submit(backup_single_model, models_path, backup_path, model): model for model in model_list
-            }
-            for future in as_completed(future_map):
-                model = future_map[future]
-                try:
-                    future.result()
-                    progress.update(task_ids[model], description=f"[green]✓ {model}", completed=1)
-                except Exception:
-                    progress.update(task_ids[model], description=f"[red]✗ {model}", completed=1)
-                    failures.append(model)
-    return failures
+    return run_parallel(model_list, lambda m: backup_single_model(models_path, backup_path, m), jobs)
 
 
 def restore_model(backup_path: Path) -> None:
@@ -401,250 +278,157 @@ def restore_model(backup_path: Path) -> None:
 
 
 def restore_models(backup_paths: list[Path], jobs: int) -> list[Path]:
-    failures: list[Path] = []
-
-    with Progress(
-        SpinnerColumn(spinner_name="dots"),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task_ids = {p.name: progress.add_task(f"  {p.name}", total=1) for p in backup_paths}
-
-        with ThreadPoolExecutor(max_workers=jobs) as executor:
-            future_map = {executor.submit(restore_model, path): path for path in backup_paths}
-            for future in as_completed(future_map):
-                path = future_map[future]
-                try:
-                    future.result()
-                    progress.update(task_ids[path.name], description=f"[green]✓ {path.name}", completed=1)
-                except Exception:
-                    progress.update(task_ids[path.name], description=f"[red]✗ {path.name}", completed=1)
-                    failures.append(path)
-    return failures
+    return run_parallel(backup_paths, restore_model, jobs, label=lambda p: p.name)
 
 
-app = typer.Typer(
-    name="ollama-tool-cli",
-    cls=StyledGroup,
-    context_settings={"help_option_names": ["--help", "-h"]},
+cli = App(
+    "ollama-tool-cli",
+    repo="https://github.com/arian24b/ollamatools",
+    description="Manage Ollama models: list, update, back up and restore.",
 )
 
 
-@app.callback(invoke_without_command=True)
-def main_callback(ctx: typer.Context) -> None:
-    if ctx.invoked_subcommand is None:
-        show_styled_help(ctx)
-        raise typer.Exit()
-    if ctx.invoked_subcommand == "info":
-        show_banner()
+@cli.command("list", "List all installed Ollama models")
+def list_models(a) -> None:
     check_installation()
-
-
-@app.command(name="list")
-def list_models() -> None:
-    """List all installed Ollama models."""
     model_list = models()
-
     if not model_list:
-        console.print("[yellow]No models are installed.[/yellow] Use [bold]ollama pull <model>[/bold] to install one.")
+        ui.warning("No models are installed. Use `ollama pull <model>` to install one.")
         return
 
     raw = run_command(["ollama", "list"]).output_text.strip().split("\n")
-
-    table = Table(show_header=True, header_style="bold", box=box.SIMPLE)
-    table.add_column("Model")
-    table.add_column("Size", justify="right")
-    table.add_column("Modified")
-
     header = raw[0]
-    id_start = header.find("ID")
-    size_start = header.find("SIZE")
-    modified_start = header.find("MODIFIED")
-
-    for line in raw[1:]:
-        if not line.strip():
-            continue
-        name = line[:id_start].strip()
-        size = line[size_start:modified_start].strip()
-        modified = line[modified_start:].strip()
-        table.add_row(name, size, modified)
-
-    console.print(f"[bold]Installed {len(model_list)} model(s)[/bold]")
-    console.print(table)
+    id_start, size_start, modified_start = header.find("ID"), header.find("SIZE"), header.find("MODIFIED")
+    rows = [
+        (line[:id_start].strip(), line[size_start:modified_start].strip(), line[modified_start:].strip())
+        for line in raw[1:]
+        if line.strip()
+    ]
+    ui.table(rows, ["Model", "Size", "Modified"])
 
 
-@app.command(name="help", hidden=True)
-def show_help(ctx: typer.Context) -> None:
-    """Show this help message and exit."""
-    show_styled_help(ctx)
-
-
-@app.command()
-def update(
-    model: str = typer.Argument(
-        None,
-        help="Model name to update (updates all models if not provided)",
-    ),
-    jobs: int | None = typer.Option(
-        1,
-        "--jobs",
-        "-j",
-        help="Number of parallel jobs",
-    ),
-    *,
-    background: bool = typer.Option(
-        False,
-        "--background",
-        "-b",
-        help="Run the command in the background",
-    ),
-) -> None:
-    """Update one or all Ollama models."""
-    if background:
+@cli.command(
+    "update-models",
+    "Update one or all Ollama models",
+    args=[Arg("model", nargs="?", help="Model name to update (updates all models if not provided)"), JOBS, BACKGROUND],
+)
+def update_cmd(a) -> None:
+    check_installation()
+    if a.background:
         spawn_background()
 
-    jobs = resolve_jobs(jobs)
-    all_models = models()
-    models_to_update = [model] if model else all_models
+    jobs = resolve_jobs(a.jobs if a.jobs is not None else 1)
+    models_to_update = [a.model] if a.model else models()
 
     if not models_to_update:
-        console.print("[yellow]No models to update.[/yellow]")
+        ui.warning("No models to update.")
         return
 
-    console.print(f"Updating {len(models_to_update)} model(s)\n")
+    ui.info(f"Updating {len(models_to_update)} model(s)")
     failures = update_models_parallel(models_to_update, jobs)
     if failures:
-        console.print(f"\n[red]Failed: {', '.join(failures)}[/red]")
-        raise typer.Exit(code=1)
-    console.print("\n[green]All models updated successfully.[/green]")
+        raise Fail(f"Failed: {', '.join(failures)}")
+    ui.success("All models updated successfully.")
 
 
-@app.command()
-def backup(
-    backup_path: Path = typer.Option(
-        BACKUP_PATH,
-        "--path",
-        "-p",
-        help="Directory where backups are saved (default: ~/Downloads/ollama_models_backup)",
-    ),
-    model: str | None = typer.Option(
-        None,
-        "--model",
-        "-m",
-        help="Specific model to back up (backs up all models if not provided)",
-    ),
-    jobs: int | None = typer.Option(
-        None,
-        "--jobs",
-        "-j",
-        help="Number of parallel jobs",
-    ),
-    background: bool = typer.Option(
-        False,
-        "--background",
-        "-b",
-        help="Run the command in the background",
-    ),
-) -> None:
-    """Back up Ollama models to zip files."""
-    if background:
+@cli.command(
+    "backup",
+    "Back up Ollama models to zip files",
+    args=[
+        Arg("-p", "--path", dest="backup_path", default=BACKUP_PATH, help="Directory where backups are saved"),
+        Arg("-m", "--model", help="Specific model to back up (backs up all models if not provided)"),
+        JOBS,
+        BACKGROUND,
+    ],
+)
+def backup(a) -> None:
+    check_installation()
+    if a.background:
         spawn_background()
 
-    jobs = resolve_jobs(jobs)
-    backup_path = Path(backup_path).expanduser()
-    model_list = [model] if model else models()
+    jobs = resolve_jobs(a.jobs)
+    backup_path = Path(a.backup_path).expanduser()
+    model_list = [a.model] if a.model else models()
     if not model_list:
-        console.print("[yellow]No models to back up.[/yellow]")
+        ui.warning("No models to back up.")
         return
 
-    console.print(f"Backing up [bold]{len(model_list)}[/bold] model(s) to: [dim]{backup_path}[/dim]\n")
+    ui.info(f"Backing up {len(model_list)} model(s) to: {backup_path}")
     failures = backup_models_parallel(backup_path, model_list, jobs)
     if failures:
-        console.print("\n[red]Backup completed with errors.[/red]")
-        console.print(f"[red]Failed: {', '.join(failures)}[/red]")
-        raise typer.Exit(code=1)
-    console.print("\n[green]Backup complete.[/green]")
+        raise Fail(f"Backup completed with errors. Failed: {', '.join(failures)}")
+    ui.success("Backup complete.")
 
 
-@app.command()
-def restore(
-    backup_path: Path = typer.Argument(
-        ...,
-        help="Path to a backup zip file or a directory of backup zip files",
-    ),
-    jobs: int | None = typer.Option(
-        None,
-        "--jobs",
-        "-j",
-        help="Number of parallel jobs",
-    ),
-    background: bool = typer.Option(
-        False,
-        "--background",
-        "-b",
-        help="Run the command in the background",
-    ),
-) -> None:
-    """Restore Ollama models from backups."""
-    if background:
+@cli.command(
+    "restore",
+    "Restore Ollama models from backups",
+    args=[
+        Arg(
+            "backup_path",
+            required=True,
+            prompt="Path to a backup zip file or a directory of backup zip files",
+            help="Path to a backup zip file or a directory of backup zip files",
+        ),
+        JOBS,
+        BACKGROUND,
+    ],
+)
+def restore(a) -> None:
+    check_installation()
+    if a.background:
         spawn_background()
 
-    backup_path = Path(backup_path).expanduser()
+    backup_path = Path(a.backup_path).expanduser()
     if not backup_path.exists():
-        console.print(f"[red]Error:[/red] Backup path does not exist: {backup_path}")
-        raise typer.Exit(code=1)
+        raise Fail(f"Backup path does not exist: {backup_path}")
 
-    jobs = resolve_jobs(jobs)
+    jobs = resolve_jobs(a.jobs)
 
     if backup_path.is_dir():
         backup_files = sorted(backup_path.glob("*.zip"))
         if not backup_files:
-            console.print(f"[red]Error:[/red] No backup zip files found in directory: {backup_path}")
-            raise typer.Exit(code=1)
+            raise Fail(f"No backup zip files found in directory: {backup_path}")
 
-        console.print(f"Restoring [bold]{len(backup_files)}[/bold] backup(s) from: [dim]{backup_path}[/dim]\n")
+        ui.info(f"Restoring {len(backup_files)} backup(s) from: {backup_path}")
         failures = restore_models(backup_files, jobs)
         if failures:
-            console.print("\n[red]Restore completed with errors.[/red]")
-            console.print(f"[red]Failed: {', '.join(str(p) for p in failures)}[/red]")
-            raise typer.Exit(code=1)
+            raise Fail(f"Restore completed with errors. Failed: {', '.join(str(p) for p in failures)}")
     else:
-        console.print(f"Restoring models from: [dim]{backup_path}[/dim]")
+        ui.info(f"Restoring models from: {backup_path}")
         restore_model(backup_path)
-    console.print("\n[green]Restore complete.[/green]")
+    ui.success("Restore complete.")
 
 
-@app.command()
-def info() -> None:
-    """Show Ollama installation information."""
-    console.print(f"[bold]Ollama Version:[/bold] {ollama_version()}")
-    console.print(f"[bold]Platform:[/bold] {platform}")
-    console.print(f"[bold]Installed Models:[/bold] {len(models())}")
-    console.print(f"[bold]Models Path:[/bold] {ollama_models_path()}")
-    console.print(f"[bold]Logs:[/bold] {log_dir()}")
+@cli.command("info", "Show Ollama installation information", banner=True)
+def info(a) -> None:
+    check_installation()
+    ui.table(
+        [
+            ("Ollama Version", ollama_version()),
+            ("Platform", platform),
+            ("Installed Models", len(models())),
+            ("Models Path", ollama_models_path()),
+            ("Logs", log_dir()),
+        ]
+    )
 
 
-@app.command()
-def logs(
-    follow: bool = typer.Option(
-        False,
-        "--follow",
-        "-f",
-        help="Follow the log output",
-    ),
-) -> None:
-    """Show the log file location or follow logs."""
-    log_path = log_dir()
-    log_file = log_path / "ollama-tool-cli.log"
-    if follow:
+@cli.command(
+    "logs",
+    "Show the log file location or follow logs",
+    args=[Arg("-f", "--follow", action="store_true", help="Follow the log output")],
+)
+def logs(a) -> None:
+    log_file = log_dir() / "ollama-tool-cli.log"
+    if a.follow:
         follow_log(log_file)
         return
-
-    console.print(f"[bold]Log file:[/bold] {log_file}")
+    ui.out(f"Log file: {log_file}")
 
 
 def main() -> None:
-    app()
+    cli.main()
 
 
 if __name__ == "__main__":
