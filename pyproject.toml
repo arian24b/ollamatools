@@ -21,7 +21,7 @@ classifiers = [
 ]
 keywords = ["ollama", "cli", "models", "backup", "restore", "llm", "ai"]
 dependencies = [
- "cfuicli>=1.0.0",
+ "cfuicli>=1.1.0",
 ]
 
 [project.scripts]
